@@ -23,7 +23,7 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
   toggleTodo: id => dispatch(toggleTodo(id))
 })
-
+// debugger;
 export default connect(
   mapStateToProps,
   mapDispatchToProps

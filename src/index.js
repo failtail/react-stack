@@ -4,19 +4,65 @@ import { Provider } from 'react-redux'
 import { createStore, applyMiddleware, compose } from './redux'
 import rootReducer from './reducers'
 import App from './components/App'
+import createSagaMiddleware from './redux-saga/packages/redux-saga/index'
+
+import mySaga from './sagas'
+// 最终返回的dispatch：
+// (action) => {
+//   // debugger
+//   console.group(action.type);
+//   console.info('dispatching', action)
+//   // next 是logger02的： // (action) => {
+//   //   console.group(action.type);
+//   //   console.info('dispatching', action)
+//   //   // next 是 (...args) => dispatch(...args)
+//   //   let result = next(action);
+//   //   console.log('next state', store.getState())
+//   //   console.groupEnd(action.type)
+//   //   return result
+//   // }
+//   let result = next(action);
+//   console.log('next state', store.getState())
+//   console.groupEnd(action.type)
+//   return result
+// }
 
 // middleware
 const logger = (store) => (next) => (action) => {
   // debugger
   console.group(action.type);
   console.info('dispatching', action)
+  // next 是logger02的： // (action) => {
+  //   console.group(action.type);
+  //   console.info('dispatching', action)
+  //   // next 是 (...args) => dispatch(...args)
+  //   let result = next(action);
+  //   console.log('next state', store.getState())
+  //   console.groupEnd(action.type)
+  //   return result
+  // }
+  let result = next(action);
+  console.log('next state', store.getState())
+  console.groupEnd(action.type)
+  return result
+}
+const logger02 = (store) => (next) => (action) => {
+  console.group(action.type);
+  console.info('dispatching', action)
+  // next 是 store.dispatch(...args)
   let result = next(action);
   console.log('next state', store.getState())
   console.groupEnd(action.type)
   return result
 }
 
-let store = createStore(rootReducer, applyMiddleware(logger));
+const sagaMiddleware = createSagaMiddleware ();
+
+
+let store = createStore(rootReducer, applyMiddleware(logger, sagaMiddleware));
+
+sagaMiddleware.run (rootSaga);
+
 const storeTest = createStore(rootReducer);
 
 render(

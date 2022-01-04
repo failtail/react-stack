@@ -1,5 +1,12 @@
 import verifySubselectors from './verifySubselectors'
 
+// selectorFactory(
+//   mapStateToProps,
+//   mapDispatchToProps,
+//   mergeProps, // function mergePropsProxy
+//   dispatch,
+//   options
+// )
 export function impureFinalPropsSelectorFactory(
   mapStateToProps,
   mapDispatchToProps,
@@ -132,18 +139,22 @@ export function pureFinalPropsSelectorFactory(
  * @returns  selectorFactory function 
  */
 // finalPropsSelectorFactory和我们的设想结构一致
+// sourceSelector = selectorFactory(
+//   store.dispatch,
+//   selectorFactoryOptions // 所有参数集合
+// );
 export default function finalPropsSelectorFactory(
   dispatch,
   
   { initMapStateToProps, initMapDispatchToProps, initMergeProps, ...options }
 ) {
   // 调用initProxySelector得到proxy function, proxy包含mapToProps, dependsOnOwnProps属性
-  const mapStateToProps = initMapStateToProps(dispatch, options)
+  const mapStateToProps = initMapStateToProps(dispatch, options) // todo  调用initProxySelector得到proxy 是对的
   const mapDispatchToProps = initMapDispatchToProps(dispatch, options)
   // mergePropsProxy为function
   // 返回值为connect(mapstate,mapdispatch,function mergeProps(){})()中mergeProps的返回值
   const mergeProps = initMergeProps(dispatch, options)
-
+  // () => defaultMergeProps
   // 非production环境检验 mapStateToProps,mapDispatchToProps,mergeProps
   if (process.env.NODE_ENV !== 'production') {
     verifySubselectors(

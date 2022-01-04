@@ -15,6 +15,7 @@ function is(x, y) {
 // 浅比较 只会比较到两个对象的 ownProperty 是否符合 Object.is 判等，不会递归地去深层比较
 //    shallowEqual({x:{}},{x:{}}) // false
 //    shallowEqual({x:1},{x:1}) // true
+// todo is在做什么
 export default function shallowEqual(objA, objB) {
   // 相同值直接返回true，shallowEqual返回值为boolean
   if (is(objA, objB)) return true

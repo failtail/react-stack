@@ -56,6 +56,7 @@ export default function applyMiddleware(...middlewares) {
     // debugger
     const store = createStore(...args)
     // 定义了一个dispatch， 调用会 throw new Error（dispatching虽然构造middleware但不允许其他middleware应用 ）
+    // todo  为什么这里要 throw new Error
     let dispatch = () => {
       throw new Error(
         `Dispatching while constructing your middleware is not allowed. ` +
@@ -69,8 +70,21 @@ export default function applyMiddleware(...middlewares) {
       getState: store.getState,
       // 添加dispatch并包装一个function， 参数为(reducer, [initstate])
       // 向下看一看middlewareAPI作为参数被回调回去，不难理解, 告诉dispath不能再middleware插件中构造
+      // 这里为什么要这样写  todo
       dispatch: (...args) => dispatch(...args)
     }
+
+// middleware
+// const logger = (store) => (next) => (action) => {
+//   debugger
+//   console.group(action.type);
+//   console.info('dispatching', action)
+//   let result = next(action);
+//   console.log('next state', store.getState())
+//   console.groupEnd(action.type)
+//   return result
+// }
+
     // 调用每一个这样形式的middleware = store => next => action =>{}, 
     // 组成一个这样[f(next)=>acticon=>next(action)...]的array，赋值给chain
     const chain = middlewares.map(middleware => middleware(middlewareAPI))
@@ -78,6 +92,8 @@ export default function applyMiddleware(...middlewares) {
     // compose看 -> compose.js文件
     // compose(...chain)会形成一个调用链, next指代下一个函数的注册, 这就是中间件的返回值要是next(action)的原因
     // 如果执行到了最后next就是原生的store.dispatch方法
+    // todo 又忘记了
+    // compose(...chain)(store.dispatch)  这种写法执行顺序
     dispatch = compose(...chain)(store.dispatch) 
     // 返回增强的store
     return {

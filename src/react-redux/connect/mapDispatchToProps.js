@@ -20,6 +20,7 @@ export function whenMapDispatchToPropsIsObject(mapDispatchToProps) {
   return mapDispatchToProps && typeof mapDispatchToProps === 'object'
   // 如果传递的是一个对象，那么使用bindActionCreators每个定义在该对象的函数都将被当作 Redux action creato
     ? wrapMapToPropsConstant(dispatch =>
+      // todo  bindActionCreators做什么
         bindActionCreators(mapDispatchToProps, dispatch)
       )
     : undefined

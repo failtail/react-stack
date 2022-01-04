@@ -170,6 +170,7 @@ export default function combineReducers(reducers) {
 
     let hasChanged = false
     const nextState = {}
+    // 需要把每一个reducers都执行一遍吗 todo
     for (let i = 0; i < finalReducerKeys.length; i++) {
       // 获取finalReducerKeys的key和value（function）
       const key = finalReducerKeys[i]

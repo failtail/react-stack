@@ -9,6 +9,7 @@ import verifyPlainObject from '../utils/verifyPlainObject'
 export function wrapMapToPropsConstant(getConstant) {
   // 返回 initConstantSelector
   return function initConstantSelector(dispatch, options) {
+    // todo 调用getConstant有返回值吗
     const constant = getConstant(dispatch, options) 
 
     function constantSelector() {
@@ -67,6 +68,11 @@ export function wrapMapToPropsFunc(mapToProps, methodName) {
       // 先看下执行顺序 第一次调用initProxySelector() => proxy() => 
       // 此时 proxy.mapToProps = detectFactoryAndVerify()
       // 再次调用 proxy(stateOrDispatch, ownProps)时 返回值为传递的mapToProps(...args)，也就是我们react组件需要的props
+      
+      // const mapStateToProps = state => ({
+      //   todos: getVisibleTodos(state.todos, state.visibilityFilter)
+      // })
+      // 这里的stateOrDispatch, ownProps 就是  mapStateToProps 的入参 state
       let props = proxy(stateOrDispatch, ownProps)
 
       // 如果props为function再次执行

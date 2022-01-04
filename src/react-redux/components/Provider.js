@@ -60,6 +60,7 @@ class Provider extends Component {
      // 获取最新的state赋值给newStoreState
       const newStoreState = store.getState()
       // 不在本次生命周期中return
+      // todo  不在本次生命周期中return ？？
       if (!this._isMounted) {
         return
       }

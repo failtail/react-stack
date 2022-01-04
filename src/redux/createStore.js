@@ -202,6 +202,7 @@ export default function createStore(reducer, preloadedState, enhancer) {
     currentReducer = nextReducer
     // 和INIT的dispath相同，发送一个dispatch初始化state，表明一下是REPLACE
     // 自己👀看一下utils方法的ActionTypes， 随性的随机数
+    // todo  怎么实现的 热加载呢
     dispatch({ type: ActionTypes.REPLACE })
   }
 

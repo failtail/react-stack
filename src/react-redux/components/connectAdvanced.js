@@ -1,11 +1,11 @@
 // hoist-non-react-statics组件，这个组件会自动把所有绑定在对象上的非React方法都绑定到新的对象上
-import hoistStatics from 'hoist-non-react-statics'
+import hoistStatics from "hoist-non-react-statics";
 // 提示信息插件
-import invariant from 'invariant'
-import React, { Component, PureComponent } from 'react'
-import { isValidElementType } from 'react-is'
+import invariant from "invariant";
+import React, { Component, PureComponent } from "react";
+import { isValidElementType } from "react-is";
 
-import { ReactReduxContext } from './Context'
+import { ReactReduxContext } from "./Context";
 
 /**
  *
@@ -29,19 +29,18 @@ import { ReactReduxContext } from './Context'
  * @returns
  */
 export default function connectAdvanced(
-
   selectorFactory,
   // options object:
   {
     // 被包裹的组件的 DisplayName 属性
-    getDisplayName = name => `ConnectAdvanced(${name})`,
+    getDisplayName = (name) => `ConnectAdvanced(${name})`,
     // 显示在错误消息中
-    methodName = 'connectAdvanced',
+    methodName = "connectAdvanced",
     // 组件是否订阅 redux store 的 state 更改
     shouldHandleStateChanges = true,
     renderCountProp = undefined, // 传递给内部组件的props键，表示render方法调用次数
     // 可以获取 store 的 props/context key
-    storeKey = 'store',
+    storeKey = "store",
     // 如果为 true，则将一个引用存储到被包裹的组件实例中，并通过 getWrappedInstance() 方法使其可用
     withRef = false,
     // 看到这个变量我的第一反应是ref的转发， 不了解的同学去看一下React.forwardRef()
@@ -57,45 +56,46 @@ export default function connectAdvanced(
   invariant(
     renderCountProp === undefined,
     `renderCountProp is removed. render counting is built into the latest React dev tools profiling extension`
-  )
+  );
 
   invariant(
     !withRef,
-    'withRef is removed. To access the wrapped instance, use a ref on the connected component'
-  )
+    "withRef is removed. To access the wrapped instance, use a ref on the connected component"
+  );
 
   const customStoreWarningMessage =
-    'To use a custom Redux store for specific components,  create a custom React context with ' +
+    "To use a custom Redux store for specific components,  create a custom React context with " +
     "React.createContext(), and pass the context object to React-Redux's Provider and specific components" +
-    ' like:  <Provider context={MyContext}><ConnectedComponent context={MyContext} /></Provider>. ' +
-    'You may also pass a {context : MyContext} option to connect'
+    " like:  <Provider context={MyContext}><ConnectedComponent context={MyContext} /></Provider>. " +
+    "You may also pass a {context : MyContext} option to connect";
 
   invariant(
-    storeKey === 'store',
-    'storeKey has been removed and does not do anything. ' +
+    storeKey === "store",
+    "storeKey has been removed and does not do anything. " +
       customStoreWarningMessage
-  )
+  );
 
   // 定义Context
-  const Context = context
+  // todo 这里的context从哪里来
+  const Context = context;
 
   // 返回react高阶组件,  WrappedComponent既包装的react组件
   return function wrapWithConnect(WrappedComponent) {
     // 参数检验
-    if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV !== "production") {
       invariant(
         isValidElementType(WrappedComponent),
         `You must pass a component to the function returned by ` +
           `${methodName}. Instead received ${JSON.stringify(WrappedComponent)}`
-      )
+      );
     }
 
     // 组件的displayName，默认Component
     const wrappedComponentName =
-      WrappedComponent.displayName || WrappedComponent.name || 'Component'
+      WrappedComponent.displayName || WrappedComponent.name || "Component";
 
     // 拼接下displayName
-    const displayName = getDisplayName(wrappedComponentName)
+    const displayName = getDisplayName(wrappedComponentName);
 
     // 定义selectorFactoryOptions对象，包含了connect和connectAdvanced的所有参数
     const selectorFactoryOptions = {
@@ -108,108 +108,125 @@ export default function connectAdvanced(
       storeKey,
       displayName,
       wrappedComponentName,
-      WrappedComponent
-    }
+      WrappedComponent,
+    };
 
     // pure决定shouldComponentUpdate是否进行shwoEqual
-    const { pure } = connectOptions
+    const { pure } = connectOptions;
 
     // Component赋值给OuterBaseComponent, 用react高阶的继承
-    let OuterBaseComponent = Component
+    let OuterBaseComponent = Component;
     // 定义FinalWrappedComponent
-    let FinalWrappedComponent = WrappedComponent
+    let FinalWrappedComponent = WrappedComponent;
 
     if (pure) {
       // 为true用PureComponent
-      OuterBaseComponent = PureComponent
+      OuterBaseComponent = PureComponent;
     }
     // 接下来直接看 class Connect extends OuterBaseComponent
 
-// 
-function makeDerivedPropsSelector() {
+    //
+    function makeDerivedPropsSelector() {
       // 定义变量, 用来保存上一次makeDerivedPropsSelector中的值
       // 变量语义化我们不难猜出意义
-      let lastProps
-      let lastState
-      let lastDerivedProps
-      let lastStore
-      let sourceSelector
-      return function selectDerivedProps(state, props, store) {  // props为父组件的props
+      let lastProps;
+      let lastState;
+      let lastDerivedProps;
+      let lastStore;
+      let sourceSelector;
+      // 导出props
+      // todo let derivedProps = this.selectDerivedProps(
+      //   storeState,
+      //   wrapperProps,  组件的props
+      //   store
+      // );
+      return function selectDerivedProps(state, props, store) {
+        // props为父组件的props
         // pure为true时，props和state的引用都没有变化, 直接返回lastDerivedProps(第一次肯定不会成立)
         // 这里不难理解, 就是要求你用"纯"的state和props
         if (pure && lastProps === props && lastState === state) {
-          return lastDerivedProps
+          return lastDerivedProps;
         }
 
         if (store !== lastStore) {
           // store赋值lastStore, 更新lastStore
           // 除第一次调用外一般不会
-          lastStore = store
+          lastStore = store;
           // selectorFactory为connect传入的function，默认值来自selsctorFactory.js的export default
+
+          // sourceSelector 是  function impureFinalPropsSelector(state, ownProps) {
+          //   // 执行mergePropsProxy，返回修改后的props
+          //   return mergeProps(
+          //     mapStateToProps(state, ownProps),  // mapStateToProps执行结果
+          //     mapDispatchToProps(dispatch, ownProps), // mapDispatchToProps的执行结果
+          //     ownProps // 自身的props
+          //   )
+          // }
           sourceSelector = selectorFactory(
             store.dispatch,
-            selectorFactoryOptions  // 所有参数集合
-          )
+            selectorFactoryOptions // 所有参数集合
+          );
         }
 
         // props赋值给lastProps
-        lastProps = props
+        lastProps = props;
         // state赋值给lastState
-        lastState = state
+        lastState = state;
 
         // 调用sourceSelector参入redux state和props, 得到最新的props
         // 不难看出selectorFactory的返回值为一个function, 目前我们可以猜测到
         // selsctorFactory.js的export default function 大体结构是这样(dispatch, option)=>(state, props) => newProps
-        const nextProps = sourceSelector(state, props)
+        const nextProps = sourceSelector(state, props);
 
         // 新旧props引用相同
         if (lastDerivedProps === nextProps) {
           // 直接返回
-          return lastDerivedProps
+          return lastDerivedProps;
         }
         // 新旧props引用不相同， nextProps赋值给lastDerivedProps
-        lastDerivedProps = nextProps
+        lastDerivedProps = nextProps;
         // 返回lastDerivedProps
-        return lastDerivedProps
+        return lastDerivedProps;
         // 最后我们去看selsctorFactory.js到底如何合并的state和props
-      }
+      };
     }
 
     function makeChildElementSelector() {
       // 定义props, ref, element变量
-      let lastChildProps, lastForwardRef, lastChildElement
+      let lastChildProps, lastForwardRef, lastChildElement;
       // 返回function
       return function selectChildElement(childProps, forwardRef) {
         // 判断新旧props， hre， elelment是否相同
         if (childProps !== lastChildProps || forwardRef !== lastForwardRef) {
           // 如果不同重新赋值
-          lastChildProps = childProps
-          lastForwardRef = forwardRef
+          lastChildProps = childProps;
+          lastForwardRef = forwardRef;
           lastChildElement = (
             // return FinalWrappedComponent, 改变props和ref
             <FinalWrappedComponent {...childProps} ref={forwardRef} />
-          )
+          );
         }
         // react组件
-        return lastChildElement
-      }
+        return lastChildElement;
+      };
     }
-
     class Connect extends OuterBaseComponent {
       constructor(props) {
-        super(props)
+        super(props);
         invariant(
           forwardRef ? !props.wrapperProps[storeKey] : !props[storeKey],
-          'Passing redux store in props has been removed and does not do anything. ' +
+          "Passing redux store in props has been removed and does not do anything. " +
             customStoreWarningMessage
-        )
+        );
         // 添加selectDerivedProps和selectChildElement方法
         // selectDerivedProps为function是makeDerivedPropsSelector的返回值
-        this.selectDerivedProps = makeDerivedPropsSelector()
+        // todo  走不进来
+        // debugger;
+        this.selectDerivedProps = makeDerivedPropsSelector();
         // selectChildElement为function
-        this.selectChildElement = makeChildElementSelector()
+        this.selectChildElement = makeChildElementSelector();
         // bind this
-        this.renderWrappedComponent = this.renderWrappedComponent.bind(this)
+        this.renderWrappedComponent = this.renderWrappedComponent.bind(this);
       }
 
       // value为context,既provider中的{storeState: store.getState(),store}
@@ -220,21 +237,22 @@ function makeDerivedPropsSelector() {
             `"${displayName}". Either wrap the root component in a <Provider>, ` +
             `or pass a custom React context provider to <Provider> and the corresponding ` +
             `React context consumer to ${displayName} in connect options.`
-        )
+        );
 
         // 获取redux state和store
-        const { storeState, store } = value
+        // 这里是Provider 传入的，在这里消费
+        const { storeState, store } = value;
 
         // 定义wrapperProps为this.props
-        let wrapperProps = this.props
-        let forwardedRef
+        let wrapperProps = this.props;
+        let forwardedRef;
         // forwardRef为真时, Connect组件提供了forwardedRef = {ref}
         if (forwardRef) {
           // wrapperProps为props中的wrapperProps
-          wrapperProps = this.props.wrapperProps
+          wrapperProps = this.props.wrapperProps;
           // forwardedRef赋值为props的forwardedRef, 传递的是ref
           // 用于传递给子组件WrappedComponent既let FinalWrappedComponent = WrappedComponent中的FinalWrappedComponent
-          forwardedRef = this.props.forwardedRef
+          forwardedRef = this.props.forwardedRef;
         }
 
         // 导出props
@@ -242,30 +260,32 @@ function makeDerivedPropsSelector() {
           storeState,
           wrapperProps,
           store
-        )
+        );
 
         // 返回最终的组件,传入最终的props和ref -> 看selectChildElement发放
-        return this.selectChildElement(derivedProps, forwardedRef)
+        return this.selectChildElement(derivedProps, forwardedRef);
       }
 
       render() {
         // 默认情况下公用的ReactReduxContext
-        const ContextToUse = this.props.context || Context
-
+        const ContextToUse = this.props.context || Context;
+        //   <Context.Provider value={this.state}>
+        //   {this.props.children}
+        // </Context.Provider>
         return (
           // <Privoder />的消费者
           <ContextToUse.Consumer>
             {this.renderWrappedComponent}
           </ContextToUse.Consumer>
-        )
+        );
       }
     }
 
     // 相当于插件
     // 包装的组件赋值给Connect.WrappedComponent
-    Connect.WrappedComponent = WrappedComponent
+    Connect.WrappedComponent = WrappedComponent;
     // 添加displayName
-    Connect.displayName = displayName
+    Connect.displayName = displayName;
 
     // forwardRef为true时
     if (forwardRef) {
@@ -274,17 +294,18 @@ function makeDerivedPropsSelector() {
         props,
         ref
       ) {
-        return <Connect wrapperProps={props} forwardedRef={ref} />
-      })
+        return <Connect wrapperProps={props} forwardedRef={ref} />;
+      });
 
       // 此时connect()(<xx />)的生成组件为forwarded， 从新挂载displayName和WrappedComponent
-      forwarded.displayName = displayName
-      forwarded.WrappedComponent = WrappedComponent
-      return hoistStatics(forwarded, WrappedComponent)
+      forwarded.displayName = displayName;
+      forwarded.WrappedComponent = WrappedComponent;
+      return hoistStatics(forwarded, WrappedComponent);
     }
 
     // 将子组件的非React的static(静态)属性或方法合并到父组件
     // 返回拓展过props属性的Connect组件
-    return hoistStatics(Connect, WrappedComponent)
-  }
+    // todo 做了什么呢
+    return hoistStatics(Connect, WrappedComponent);
+  };
 }
