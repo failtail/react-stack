@@ -7,11 +7,14 @@ import forkQueue from './forkQueue'
 import * as sagaError from './sagaError'
 
 export default function newTask(env, mainTask, parentContext, parentEffectId, meta, isRoot, cont = noop) {
+  // 表示 task 的状态
   let status = RUNNING
+  // 表示 task 最终执行的结果
   let taskResult
+  // 表示 task 执行过程中产生的错误
   let taskError
   let deferredEnd = null
-
+// 由于执行过程中报错而被取消的 tasks 数组
   const cancelledDueToErrorTasks = []
 
   const context = Object.create(parentContext)

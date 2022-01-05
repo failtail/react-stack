@@ -4,9 +4,9 @@ import { Provider } from 'react-redux'
 import { createStore, applyMiddleware, compose } from './redux'
 import rootReducer from './reducers'
 import App from './components/App'
-import createSagaMiddleware from './redux-saga/packages/redux-saga/index'
+import createSagaMiddleware from './redux-saga/index'
 
-import mySaga from './sagas'
+import rootSaga from './rootSaga.js'
 // 最终返回的dispatch：
 // (action) => {
 //   // debugger
@@ -55,7 +55,7 @@ const logger02 = (store) => (next) => (action) => {
   console.groupEnd(action.type)
   return result
 }
-
+debugger;
 const sagaMiddleware = createSagaMiddleware ();
 
 

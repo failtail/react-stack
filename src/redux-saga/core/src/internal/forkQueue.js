@@ -15,11 +15,16 @@ import { noop, remove } from './utils'
  - It aborts if any uncaught error bubbles up from forks
  - If it completes, the return value is the one returned by the main task
  **/
+// 主要用于处理主任务和分支任务的关系的
+// middleware.run(saga, ...args) 会创建一个主任务，saga 内部执行 fork 的时候又会创建一个任务，这个任务就是它的分支任务。  todo
 export default function forkQueue(mainTask, onAbort, cont) {
+  //  一个数组，里面会包含所有的任务
   let tasks = []
+  //  主任务返回的结果
   let result
+  // 表明任务是否已经执行完毕
   let completed = false
-
+// 将主任务添加到任务队列里面
   addTask(mainTask)
   const getTasks = () => tasks
 

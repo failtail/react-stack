@@ -1,72 +1,96 @@
-import * as is from '@redux-saga/is'
-import { compose } from 'redux'
-import proc from './proc'
-import { stdChannel } from './channel'
-import { immediately } from './scheduler'
-import nextSagaId from './uid'
-import { check, logError, noop, wrapSagaDispatch, identity, getMetaInfo } from './utils'
+import * as is from "@redux-saga/is";
+import { compose } from "redux";
+import proc from "./proc";
+import { stdChannel } from "./channel";
+import { immediately } from "./scheduler";
+import nextSagaId from "./uid";
+import {
+  check,
+  logError,
+  noop,
+  wrapSagaDispatch,
+  identity,
+  getMetaInfo,
+} from "./utils";
 
-const RUN_SAGA_SIGNATURE = 'runSaga(options, saga, ...args)'
-const NON_GENERATOR_ERR = `${RUN_SAGA_SIGNATURE}: saga argument must be a Generator function!`
+const RUN_SAGA_SIGNATURE = "runSaga(options, saga, ...args)";
+const NON_GENERATOR_ERR = `${RUN_SAGA_SIGNATURE}: saga argument must be a Generator function!`;
 
 export function runSaga(
-  { channel = stdChannel(), dispatch, getState, context = {}, sagaMonitor, effectMiddlewares, onError = logError },
+  {
+    channel = stdChannel(),
+    dispatch,
+    getState,
+    context = {},
+    sagaMonitor,
+    effectMiddlewares,
+    onError = logError,
+  },
   saga,
   ...args
 ) {
-  if (process.env.NODE_ENV !== 'production') {
-    check(saga, is.func, NON_GENERATOR_ERR)
+  if (process.env.NODE_ENV !== "production") {
+    check(saga, is.func, NON_GENERATOR_ERR);
+  }
+  // 根据传进来的 saga（Generator） 生成 interator 对象
+  const iterator = saga(...args);
+
+  if (process.env.NODE_ENV !== "production") {
+    check(iterator, is.iterator, NON_GENERATOR_ERR);
   }
 
-  const iterator = saga(...args)
-
-  if (process.env.NODE_ENV !== 'production') {
-    check(iterator, is.iterator, NON_GENERATOR_ERR)
-  }
-
-  const effectId = nextSagaId()
+  const effectId = nextSagaId();
 
   if (sagaMonitor) {
     // monitors are expected to have a certain interface, let's fill-in any missing ones
-    sagaMonitor.rootSagaStarted = sagaMonitor.rootSagaStarted || noop
-    sagaMonitor.effectTriggered = sagaMonitor.effectTriggered || noop
-    sagaMonitor.effectResolved = sagaMonitor.effectResolved || noop
-    sagaMonitor.effectRejected = sagaMonitor.effectRejected || noop
-    sagaMonitor.effectCancelled = sagaMonitor.effectCancelled || noop
-    sagaMonitor.actionDispatched = sagaMonitor.actionDispatched || noop
+    sagaMonitor.rootSagaStarted = sagaMonitor.rootSagaStarted || noop;
+    sagaMonitor.effectTriggered = sagaMonitor.effectTriggered || noop;
+    sagaMonitor.effectResolved = sagaMonitor.effectResolved || noop;
+    sagaMonitor.effectRejected = sagaMonitor.effectRejected || noop;
+    sagaMonitor.effectCancelled = sagaMonitor.effectCancelled || noop;
+    sagaMonitor.actionDispatched = sagaMonitor.actionDispatched || noop;
 
-    sagaMonitor.rootSagaStarted({ effectId, saga, args })
+    sagaMonitor.rootSagaStarted({ effectId, saga, args });
   }
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV !== "production") {
     if (is.notUndef(dispatch)) {
-      check(dispatch, is.func, 'dispatch must be a function')
+      check(dispatch, is.func, "dispatch must be a function");
     }
 
     if (is.notUndef(getState)) {
-      check(getState, is.func, 'getState must be a function')
+      check(getState, is.func, "getState must be a function");
     }
 
     if (is.notUndef(effectMiddlewares)) {
-      const MIDDLEWARE_TYPE_ERROR = 'effectMiddlewares must be an array of functions'
-      check(effectMiddlewares, is.array, MIDDLEWARE_TYPE_ERROR)
-      effectMiddlewares.forEach(effectMiddleware => check(effectMiddleware, is.func, MIDDLEWARE_TYPE_ERROR))
+      const MIDDLEWARE_TYPE_ERROR =
+        "effectMiddlewares must be an array of functions";
+      check(effectMiddlewares, is.array, MIDDLEWARE_TYPE_ERROR);
+      effectMiddlewares.forEach((effectMiddleware) =>
+        check(effectMiddleware, is.func, MIDDLEWARE_TYPE_ERROR)
+      );
     }
 
-    check(onError, is.func, 'onError passed to the redux-saga is not a function!')
+    check(
+      onError,
+      is.func,
+      "onError passed to the redux-saga is not a function!"
+    );
   }
 
-  let finalizeRunEffect
+  let finalizeRunEffect;
   if (effectMiddlewares) {
-    const middleware = compose(...effectMiddlewares)
-    finalizeRunEffect = runEffect => {
+    const middleware = compose(...effectMiddlewares);
+    finalizeRunEffect = (runEffect) => {
       return (effect, effectId, currCb) => {
-        const plainRunEffect = eff => runEffect(eff, effectId, currCb)
-        return middleware(plainRunEffect)(effect)
-      }
-    }
+        const plainRunEffect = (eff) => runEffect(eff, effectId, currCb);
+        return middleware(plainRunEffect)(effect);
+      };
+    };
   } else {
-    finalizeRunEffect = identity
+    // 2.对 finalizeRunEffect 进行赋值
+    // export const identity = v => v
+    finalizeRunEffect = identity;
   }
 
   const env = {
@@ -76,15 +100,23 @@ export function runSaga(
     sagaMonitor,
     onError,
     finalizeRunEffect,
-  }
+  };
 
   return immediately(() => {
-    const task = proc(env, iterator, context, effectId, getMetaInfo(saga), /* isRoot */ true, undefined)
+    const task = proc(
+      env,
+      iterator,
+      context,
+      effectId,
+      getMetaInfo(saga),
+      /* isRoot */ true,
+      undefined
+    );
 
     if (sagaMonitor) {
-      sagaMonitor.effectResolved(effectId, task)
+      sagaMonitor.effectResolved(effectId, task);
     }
-
-    return task
-  })
+    // 3.返回 task， 这里的task是一个对象，怎么在immediately中当成函数在执行 todo
+    return task;
+  });
 }

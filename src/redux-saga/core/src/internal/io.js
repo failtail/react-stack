@@ -8,6 +8,8 @@ const TEST_HINT =
   '\n(HINT: if you are getting these errors in tests, consider using createMockTask from @redux-saga/testing-utils)'
 
 const makeEffect = (type, payload) => ({
+  // 这个 effect[IO] 是个什么东西呢，其实就是 effect creators 如：call put take ...... 这些返回的对象里面会用添加一个 symbol IO 为 true，
+  // 所以如果 effect[IO] === true 则表示这个 effect 是上述那些 api 产生的，所以调用这些 api 对应的 runner 去执行，
   [IO]: true,
   // this property makes all/race distinguishable in generic manner from other effects
   // currently it's not used at runtime at all but it's here to satisfy type systems

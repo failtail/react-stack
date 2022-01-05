@@ -103,7 +103,7 @@ function runTakeEffect(env, { channel = env.channel, pattern, maybe }, cb) {
   }
   cb.cancel = takeCb.cancel
 }
-
+// 这里的 cb 就是我们在 proc 那篇里面讲的 runEffect 方法里面定义的 currCb
 function runCallEffect(env, { context, fn, args }, cb, { task }) {
   // catch synchronous failures; see #152
   try {
